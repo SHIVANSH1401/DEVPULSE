@@ -1,0 +1,29 @@
+{
+  "name": "devpulse-monorepo",
+  "version": "1.0.0",
+  "description": "DevPulse — Scalable Multi-Tenant Task & Workspace Management Engine",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed",
+    "test": "cd backend && npm test",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "mern",
+    "devpulse",
+    "multi-tenant",
+    "kanban",
+    "mongodb",
+    "express",
+    "react",
+    "node"
+  ],
+  "author": "Shivansh Singh",
+  "license": "MIT"
+}
