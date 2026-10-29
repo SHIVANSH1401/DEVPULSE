@@ -62,6 +62,14 @@ TaskSchema.virtual('assignee', {
   justOne: true,
 });
 
+// Virtual ticket key identifier (e.g. DP-8F3A) for Linear/Jira style tracking
+TaskSchema.virtual('key').get(function () {
+  if (this._id) {
+    return `DP-${this._id.toString().slice(-4).toUpperCase()}`;
+  }
+  return 'DP-TASK';
+});
+
 // Compound indexing strategy specified in Section 3 of ARCHITECTURE.md
 TaskSchema.index(
   { workspaceId: 1, status: 1, createdAt: -1 },

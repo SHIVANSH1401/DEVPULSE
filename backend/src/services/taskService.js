@@ -32,7 +32,11 @@ export const taskService = {
     });
 
     const populatedTask = await Task.findById(task._id).populate('assignee', 'name email avatar');
-    return populatedTask;
+    const taskObj = populatedTask.toObject({ virtuals: true });
+    return {
+      ...taskObj,
+      key: taskObj.key || `DP-${taskObj._id.toString().slice(-4).toUpperCase()}`,
+    };
   },
 
   /**
@@ -88,8 +92,13 @@ export const taskService = {
 
     const totalPages = Math.ceil(total / limitNum) || 1;
 
+    const formattedTasks = tasks.map((t) => ({
+      ...t,
+      key: t.key || `DP-${t._id.toString().slice(-4).toUpperCase()}`,
+    }));
+
     return {
-      tasks,
+      tasks: formattedTasks,
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -112,7 +121,11 @@ export const taskService = {
       throw new AppError(`Task with ID '${id}' not found.`, 404, 'TASK_NOT_FOUND');
     }
 
-    return task;
+    const taskObj = task.toObject({ virtuals: true });
+    return {
+      ...taskObj,
+      key: taskObj.key || `DP-${taskObj._id.toString().slice(-4).toUpperCase()}`,
+    };
   },
 
   /**
@@ -140,7 +153,11 @@ export const taskService = {
       throw new AppError(`Task with ID '${id}' not found.`, 404, 'TASK_NOT_FOUND');
     }
 
-    return updatedTask;
+    const taskObj = updatedTask.toObject({ virtuals: true });
+    return {
+      ...taskObj,
+      key: taskObj.key || `DP-${taskObj._id.toString().slice(-4).toUpperCase()}`,
+    };
   },
 
   /**

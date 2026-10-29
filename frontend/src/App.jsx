@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import AppLayout from './components/layout/AppLayout';
 import TaskBoard from './components/kanban/TaskBoard';
+import TaskListView from './components/kanban/TaskListView';
 import TaskModal from './components/modals/TaskModal';
 import MemberModal from './components/modals/MemberModal';
 import CreateWorkspaceModal from './components/modals/CreateWorkspaceModal';
@@ -13,6 +14,7 @@ export function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('devpulse-theme') || 'dark');
 
   // Client UI States
+  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
@@ -22,6 +24,27 @@ export function App() {
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [backendHealth, setBackendHealth] = useState('CHECKING');
+
+  // Global hotkey: Press 'c' or 'n' to create task
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (
+        (e.key === 'c' || e.key === 'C') &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !isTaskModalOpen &&
+        !isMemberModalOpen &&
+        !isWorkspaceModalOpen &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        handleQuickAdd('todo');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isTaskModalOpen, isMemberModalOpen, isWorkspaceModalOpen]);
 
   // Debounce search input by 200ms
   useEffect(() => {
@@ -112,6 +135,11 @@ export function App() {
     }
   };
 
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.status === 'done').length,
+    [tasks]
+  );
+
   return (
     <AppLayout
       workspace={workspace}
@@ -127,7 +155,10 @@ export function App() {
       theme={theme}
       onToggleTheme={toggleTheme}
       totalTasks={tasks.length}
+      completedTasks={completedTasks}
       healthStatus={backendHealth}
+      viewMode={viewMode}
+      onViewModeChange={setViewMode}
     >
       {workspaceError ? (
         <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
@@ -137,6 +168,14 @@ export function App() {
             Create New Workspace
           </button>
         </div>
+      ) : viewMode === 'list' ? (
+        <TaskListView
+          tasks={tasks}
+          loading={tasksLoading || workspaceLoading}
+          onSelectTask={handleSelectTask}
+          onStatusChange={updateTaskStatus}
+          onDeleteTask={deleteTask}
+        />
       ) : (
         <TaskBoard
           tasks={tasks}

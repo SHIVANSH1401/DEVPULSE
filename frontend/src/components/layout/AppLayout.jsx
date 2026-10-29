@@ -17,6 +17,9 @@ export const AppLayout = ({
   onToggleTheme,
   totalTasks,
   healthStatus,
+  viewMode = 'kanban',
+  onViewModeChange,
+  completedTasks = 0,
   children,
 }) => {
   return (
@@ -34,6 +37,7 @@ export const AppLayout = ({
         <Header
           workspaceName={workspace?.name}
           totalTasks={totalTasks}
+          completedTasks={completedTasks}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
           priorityFilter={priorityFilter}
@@ -41,6 +45,8 @@ export const AppLayout = ({
           onNewTaskClick={onNewTaskClick}
           theme={theme}
           onToggleTheme={onToggleTheme}
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
         />
 
         <main className="content-area">

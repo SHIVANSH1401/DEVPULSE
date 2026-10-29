@@ -23,6 +23,16 @@ const statusOrder = ['backlog', 'todo', 'in-progress', 'done'];
 export const TaskCard = ({ task, onSelectTask, onStatusChange, onDeleteTask }) => {
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  const ticketKey = task.key || `DP-${task._id.slice(-4).toUpperCase()}`;
+
+  const handleCopyKey = (e) => {
+    e.stopPropagation();
+    navigator.clipboard?.writeText(ticketKey);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 1500);
+  };
 
   const handleDragStart = (e) => {
     e.dataTransfer.setData(
@@ -60,16 +70,17 @@ export const TaskCard = ({ task, onSelectTask, onStatusChange, onDeleteTask }) =
       onClick={() => onSelectTask(task)}
       style={{ opacity: isUpdating ? 0.7 : 1 }}
     >
-      <div className="task-card-header">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1 }}>
-          <h4 className="task-card-title" title={task.title}>
-            {task.title}
-          </h4>
-          {task.description && (
-            <p className="task-card-desc" title={task.description}>
-              {task.description}
-            </p>
-          )}
+      {/* Top Meta Line: Ticket Key + Quick Menu */}
+      <div className="task-card-meta-line">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span
+            className="ticket-key-badge"
+            title="Click to copy ticket ID"
+            onClick={handleCopyKey}
+          >
+            {copiedKey ? 'COPIED!' : ticketKey}
+          </span>
+          <span className={`status-indicator mini ${task.status}`} />
         </div>
 
         <div style={{ position: 'relative' }}>
@@ -82,82 +93,51 @@ export const TaskCard = ({ task, onSelectTask, onStatusChange, onDeleteTask }) =
               setShowStatusMenu(!showStatusMenu);
             }}
           >
-            <MoreVertical size={16} />
+            <MoreVertical size={14} />
           </button>
 
           {showStatusMenu && (
             <div
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: '100%',
-                background: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '8px',
-                boxShadow: 'var(--shadow-elevation)',
-                zIndex: 30,
-                padding: '0.4rem',
-                minWidth: '150px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.2rem',
-              }}
+              className="popover-menu"
               onClick={(e) => e.stopPropagation()}
             >
-              <div
-                style={{
-                  fontSize: '0.68rem',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                  padding: '0.2rem 0.5rem',
-                  fontWeight: 600,
-                }}
-              >
-                Move to
-              </div>
+              <div className="popover-menu-title">Move to status</div>
               {statusOrder.map((st) => (
                 <button
                   key={st}
                   type="button"
                   onClick={(e) => handleStatusClick(e, st)}
-                  className="btn btn-ghost"
-                  style={{
-                    justifyContent: 'flex-start',
-                    height: '28px',
-                    fontSize: '0.78rem',
-                    padding: '0.2rem 0.5rem',
-                    fontWeight: task.status === st ? 600 : 400,
-                    color: task.status === st ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  }}
+                  className={`btn btn-ghost popover-menu-item ${task.status === st ? 'active' : ''}`}
                 >
-                  <span
-                    className={`status-indicator ${st}`}
-                    style={{ width: '6px', height: '6px', marginRight: '6px' }}
-                  />
+                  <span className={`status-indicator ${st}`} style={{ width: '6px', height: '6px' }} />
                   {st.replace('-', ' ')}
                 </button>
               ))}
 
-              <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '0.2rem 0' }} />
+              <div className="popover-divider" />
 
               <button
                 type="button"
                 onClick={handleDelete}
-                className="btn btn-ghost"
-                style={{
-                  justifyContent: 'flex-start',
-                  height: '28px',
-                  fontSize: '0.78rem',
-                  padding: '0.2rem 0.5rem',
-                  color: '#f87171',
-                }}
+                className="btn btn-ghost popover-menu-item danger"
               >
-                <Trash2 size={13} style={{ marginRight: '6px' }} />
+                <Trash2 size={13} />
                 Delete Task
               </button>
             </div>
           )}
         </div>
+      </div>
+
+      <div className="task-card-content">
+        <h4 className="task-card-title" title={task.title}>
+          {task.title}
+        </h4>
+        {task.description && (
+          <p className="task-card-desc" title={task.description}>
+            {task.description}
+          </p>
+        )}
       </div>
 
       {task.tags && task.tags.length > 0 && (
@@ -190,15 +170,7 @@ export const TaskCard = ({ task, onSelectTask, onStatusChange, onDeleteTask }) =
               className="member-avatar"
             />
           ) : (
-            <span
-              style={{
-                fontSize: '0.72rem',
-                color: 'var(--text-muted)',
-                fontStyle: 'italic',
-              }}
-            >
-              Unassigned
-            </span>
+            <span className="unassigned-text">Unassigned</span>
           )}
         </div>
       </div>
