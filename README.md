@@ -7,6 +7,11 @@
 [![Zod Validation](https://img.shields.io/badge/zod-3.24.1-purple.svg)](https://zod.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> 🚀 **Live Production Deployment:**
+> - **Live Frontend Application:** [https://frontend-zeta-tan-74.vercel.app](https://frontend-zeta-tan-74.vercel.app)
+> - **Live Backend Health Check:** [https://backend-nine-xi-31.vercel.app/api/v1/health](https://backend-nine-xi-31.vercel.app/api/v1/health)
+> - **Live Backend Base API:** [https://backend-nine-xi-31.vercel.app/api/v1](https://backend-nine-xi-31.vercel.app/api/v1)
+
 DevPulse is a high-performance, multi-tenant workspace and task orchestration engine designed for engineering and product teams. It mirrors the core capabilities of enterprise project management platforms like Plane, Linear, and Jira.
 
 The system allows organizations to create isolated workspaces, manage member access with role hierarchies, organize tasks across interactive Kanban stages with native drag-and-drop, filter in real-time by priority and search query, and track discussions through threaded task comments.
