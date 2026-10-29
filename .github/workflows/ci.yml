@@ -25,8 +25,10 @@ jobs:
         working-directory: backend
 
       - name: Run Backend Integration & Contract Tests
-        run: npm test
+        run: node --test tests/api.test.js
         working-directory: backend
+        env:
+          NODE_ENV: test
 
       - name: Install Frontend Dependencies
         run: npm install
@@ -35,3 +37,5 @@ jobs:
       - name: Build Frontend Distribution
         run: npm run build
         working-directory: frontend
+        env:
+          VITE_API_URL: https://backend-nine-xi-31.vercel.app/api/v1
