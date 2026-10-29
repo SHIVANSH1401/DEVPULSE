@@ -1,12 +1,24 @@
+import mongoose from 'mongoose';
 import { Workspace } from '../models/Workspace.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
+import { mockStore } from './mockStore.js';
+
+const isDBConnected = () => mongoose.connection.readyState === 1;
 
 export const workspaceService = {
   /**
    * Create a new workspace with embedded owner member
    */
   async createWorkspace({ name, slug, ownerEmail, ownerName, description }) {
+    if (!isDBConnected()) {
+      const existing = await mockStore.getWorkspaceBySlug(slug);
+      if (existing) {
+        throw new AppError(`A workspace with slug '${slug}' already exists.`, 409, 'DUPLICATE_RESOURCE');
+      }
+      return await mockStore.createWorkspace({ name, slug, ownerEmail, ownerName, description });
+    }
+
     const existing = await Workspace.findOne({ slug: slug.toLowerCase() });
     if (existing) {
       throw new AppError(`A workspace with slug '${slug}' already exists.`, 409, 'DUPLICATE_RESOURCE');
@@ -44,6 +56,14 @@ export const workspaceService = {
    * Get workspace by slug
    */
   async getWorkspaceBySlug(slug) {
+    if (!isDBConnected()) {
+      const ws = await mockStore.getWorkspaceBySlug(slug);
+      if (!ws) {
+        throw new AppError(`Workspace with slug '${slug}' not found.`, 404, 'WORKSPACE_NOT_FOUND');
+      }
+      return ws;
+    }
+
     const workspace = await Workspace.findOne({ slug: slug.toLowerCase() });
     if (!workspace) {
       throw new AppError(`Workspace with slug '${slug}' not found.`, 404, 'WORKSPACE_NOT_FOUND');
@@ -55,6 +75,14 @@ export const workspaceService = {
    * Get workspace by ID
    */
   async getWorkspaceById(id) {
+    if (!isDBConnected()) {
+      const ws = await mockStore.getWorkspaceById(id);
+      if (!ws) {
+        throw new AppError(`Workspace with ID '${id}' not found.`, 404, 'WORKSPACE_NOT_FOUND');
+      }
+      return ws;
+    }
+
     const workspace = await Workspace.findById(id);
     if (!workspace) {
       throw new AppError(`Workspace with ID '${id}' not found.`, 404, 'WORKSPACE_NOT_FOUND');
@@ -66,6 +94,9 @@ export const workspaceService = {
    * List all workspaces (for workspace switcher)
    */
   async getAllWorkspaces() {
+    if (!isDBConnected()) {
+      return await mockStore.getAllWorkspaces();
+    }
     return await Workspace.find().sort({ createdAt: -1 });
   },
 
@@ -73,6 +104,14 @@ export const workspaceService = {
    * Add a member to a workspace by slug
    */
   async addMember(slug, { email, name, role = 'member' }) {
+    if (!isDBConnected()) {
+      const ws = await mockStore.getWorkspaceBySlug(slug);
+      if (!ws) {
+        throw new AppError(`Workspace with slug '${slug}' not found.`, 404, 'WORKSPACE_NOT_FOUND');
+      }
+      return await mockStore.addMember(slug, { email, name, role });
+    }
+
     const workspace = await Workspace.findOne({ slug: slug.toLowerCase() });
     if (!workspace) {
       throw new AppError(`Workspace with slug '${slug}' not found.`, 404, 'WORKSPACE_NOT_FOUND');

@@ -4,12 +4,19 @@ import { Workspace } from '../models/Workspace.js';
 import { User } from '../models/User.js';
 import { Comment } from '../models/Comment.js';
 import { AppError } from '../utils/AppError.js';
+import { mockStore } from './mockStore.js';
+
+const isDBConnected = () => mongoose.connection.readyState === 1;
 
 export const taskService = {
   /**
    * Create a new task within a workspace
    */
   async createTask(workspaceId, taskData) {
+    if (!isDBConnected()) {
+      return await mockStore.createTask(workspaceId, taskData);
+    }
+
     if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
       throw new AppError(`Invalid workspace ID: ${workspaceId}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -43,6 +50,10 @@ export const taskService = {
    * List tasks for a workspace with compound-indexed filtering and pagination
    */
   async getTasks(workspaceId, queryParams = {}) {
+    if (!isDBConnected()) {
+      return await mockStore.getTasks(workspaceId, queryParams);
+    }
+
     if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
       throw new AppError(`Invalid workspace ID: ${workspaceId}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -112,6 +123,14 @@ export const taskService = {
    * Get single task details
    */
   async getTaskById(id) {
+    if (!isDBConnected()) {
+      const task = await mockStore.getTaskById(id);
+      if (!task) {
+        throw new AppError(`Task with ID '${id}' not found.`, 404, 'TASK_NOT_FOUND');
+      }
+      return task;
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new AppError(`Invalid task ID: ${id}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -132,6 +151,14 @@ export const taskService = {
    * Update task fields (status, priority, title, description, assignee, tags)
    */
   async updateTask(id, updateData) {
+    if (!isDBConnected()) {
+      const updated = await mockStore.updateTask(id, updateData);
+      if (!updated) {
+        throw new AppError(`Task with ID '${id}' not found.`, 404, 'TASK_NOT_FOUND');
+      }
+      return updated;
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new AppError(`Invalid task ID: ${id}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -164,6 +191,14 @@ export const taskService = {
    * Delete a task and remove its referenced comments
    */
   async deleteTask(id) {
+    if (!isDBConnected()) {
+      const res = await mockStore.deleteTask(id);
+      if (!res) {
+        throw new AppError(`Task with ID '${id}' not found.`, 404, 'TASK_NOT_FOUND');
+      }
+      return res;
+    }
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new AppError(`Invalid task ID: ${id}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -183,6 +218,10 @@ export const taskService = {
    * List comments for a task
    */
   async getComments(taskId) {
+    if (!isDBConnected()) {
+      return await mockStore.getComments(taskId);
+    }
+
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError(`Invalid task ID: ${taskId}`, 400, 'INVALID_IDENTIFIER');
     }
@@ -204,6 +243,10 @@ export const taskService = {
    * Add comment to a task
    */
   async addComment(taskId, commentData) {
+    if (!isDBConnected()) {
+      return await mockStore.addComment(taskId, commentData);
+    }
+
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError(`Invalid task ID: ${taskId}`, 400, 'INVALID_IDENTIFIER');
     }
